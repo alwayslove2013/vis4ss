@@ -52,6 +52,7 @@ class FaissIndex:
     def init_ivf(self):
         index = self.index
         self.centroids = index.quantizer.reconstruct_n(0, index.nlist)
+
         invlists = index.invlists
         list_id2vector_ids = [
             faiss.rev_swig_ptr(
@@ -98,15 +99,44 @@ class FaissIndex:
         top_kk = min(self.max_nlist_size * index.nprobe, index.nlist)
         _, _top_kk_ids = index.search(target, top_kk)
         top_kk_ids = _top_kk_ids[0]
-        list_ids = list({self.vector_id2list_id[id] for id in top_kk_ids if id >= 0})
+        list_ids = list({self.vector_id2list_id[id]
+                        for id in top_kk_ids if id >= 0})
+
+        self.centroid_projections = get_projections(
+            self.centroids.tolist() + target.tolist())
+        fine_centroid_projection = self.centroid_projections[list_ids].mean(
+            0).tolist()
+        level_0_nodes_centroids = [
+            {
+                'auto_id': 'centroid-%s' % i,
+                'id': 0,
+                'projection': self.centroid_projections[i].tolist(),
+                'type': 'fine' if i in list_ids else 'coarse',
+                'has_cluster': 0,
+            }
+            for i in range(index.nlist)
+        ]
+        level_0_nodes_target = [{
+            'auto_id': target_id,
+            'id': self.names[target_id],
+            'projection': self.centroid_projections[index.nlist].tolist(),
+            'type': 'target',
+            'has_cluster': 0,
+        }]
+        format_res_level_0 = {
+            'level': 0,
+            'fine_centroid_projection': fine_centroid_projection,
+            'nodes': level_0_nodes_centroids + level_0_nodes_target
+        }
+
         coarse_centroids = [self.centroids[list_id] for list_id in list_ids]
         coarse_ids = []
         for list_id in list_ids:
             coarse_ids += self.list_id2vector_ids[list_id]
         coarse_vectors = [self.vectors[id] for id in coarse_ids]
 
-        # fit_vectors = coarse_vectors + coarse_centroids
-        fit_vectors = coarse_vectors
+        fit_vectors = coarse_vectors + coarse_centroids
+        # fit_vectors = coarse_vectors
         projections = get_projections(fit_vectors).tolist()
 
         def get_type(id):
@@ -116,31 +146,48 @@ class FaissIndex:
                 return 'fine'
             return 'coarse'
 
-        format_res_vectors = [
+        level_1_nodes_coarse = [
             {
-                'id': coarse_ids[i],
+                'auto_id': coarse_ids[i],
+                'id': self.names[coarse_ids[i]],
                 'projection': projections[i],
                 'type': get_type(coarse_ids[i]),
-                'list_id': self.vector_id2list_id[coarse_ids[i]]
+                'have_cluster': 0,
+                'cluster_id': self.vector_id2list_id[coarse_ids[i]],
             }
             for i in range(len(fit_vectors))
         ]
-        # format_res_centroids = [
-        #     {
-        #         'id': 'centroid-%d' % get_nearest_centriod_and_list_id(fit_vectors[i]),
-        #         'projection': projections[i],
-        #         'type': 'centroid',
-        #         'list_id': list_ids[i - len(coarse_vectors)]
-        #     }
-        #     for i in range(len(coarse_vectors), len(coarse_vectors) + len(coarse_centroids))
-        # ]
-        format_res = format_res_vectors + format_res_centroids
+        level_1_nodes_centroids = [
+            {
+                'auto_id': 'centroid-%d' % get_nearest_centriod_and_list_id(fit_vectors[i]),
+                'id': 0,
+                'projection': projections[i],
+                'type': 'upper_level',
+                'have_cluster': 0,
+                'cluster_id': list_ids[i - len(coarse_vectors)]
+            }
+            for i in range(len(coarse_vectors), len(coarse_vectors) + len(coarse_centroids))
+        ]
+        format_res_level_1 = {
+            'level': 1,
+            'fine_centroid_projection': [],
+            'nodes': level_1_nodes_coarse + level_1_nodes_centroids
+        }
+        
+        format_res = {
+            'num_level': 2,
+            'data': [
+                format_res_level_0,
+                format_res_level_1,
+            ],
+        }
 
         return format_res
 
 
 def distance(vector_0, vector_1):
     return np.linalg.norm(vector_0 - vector_1)
+
 
 def get_nearest_centriod_and_list_id(vector, centroids):
     list_id = 0
@@ -152,5 +199,6 @@ def get_nearest_centriod_and_list_id(vector, centroids):
             min_dis = dis
             list_id = i
     return list_id
+
 
 faissIndex = FaissIndex()
