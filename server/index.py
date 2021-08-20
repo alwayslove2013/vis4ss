@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from faiss_index import faissIndex
 import csv
+import io
 
 app = Flask(__name__)
 CORS(app)
@@ -11,8 +12,12 @@ successMsg = {
     'message': 'ok'
 }
 
-@app.route("/set_data")
+@app.route("/set_data", methods=['POST'])
 def set_data():
+    fileRead = request.files['file'].stream.read()
+    rows = csv.reader(io.StringIO(str(fileRead, encoding="utf-8")))
+    data = [row for row in rows]
+    faissIndex.set_data(data)
     return jsonify(successMsg)
 
 @app.route("/index_construct_params")

@@ -14,3 +14,12 @@ const fetchData = (url, params = "") => {
   });
 };
 
+export const set_data = (file) => {
+  const form = new FormData();
+  form.append("file", file);
+  const url = baseUrl + 'set_data'
+  return fetch(url, {
+    body: form,
+    method: 'POST',
+  }).then(res => res.json());
+}

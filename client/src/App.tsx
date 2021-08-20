@@ -2,6 +2,7 @@ import React from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import { StoreProvider } from "Store";
+import Header from "Views/Header"
 
 const useStyles = makeStyles((theme: Theme) => {
   const headerHeight = theme.spacing(4);
@@ -24,9 +25,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: "flex",
       alignItems: "center",
       color: "#fff",
-    },
-    headerText: {
-      paddingLeft: theme.spacing(2),
     },
     mainContainer: {
       position: "absolute",
@@ -68,9 +66,7 @@ function App() {
     <StoreProvider>
       <div className={classes.root}>
         <header className={classes.header}>
-          <Typography variant="h6" className={classes.headerText}>
-            Vis for Similarity Search
-          </Typography>
+          <Header/>
         </header>
         <div className={classes.mainContainer}>
           <div className={classes.leftContainer}></div>
