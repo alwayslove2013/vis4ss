@@ -4,7 +4,7 @@ import createStore from "./createStore";
 
 const storeContext = React.createContext({});
 
-export const StoreProvider = ({ children }: { children: React.FC }) => {
+export const StoreProvider = ({ children }: { children: React.ReactElement }) => {
   const store = useLocalObservable(createStore);
   return (
     <storeContext.Provider value={store}>{children}</storeContext.Provider>
