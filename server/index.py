@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from faiss_index import faissIndex
+import csv
 
 app = Flask(__name__)
 CORS(app)
@@ -26,8 +27,8 @@ def index_search_params():
 def search_by_id():
     return jsonify(successMsg)
 
-@app.route("/search_by_vector")
-def search_by_id():
+@app.route("/search_by_name")
+def search_by_name():
     return jsonify(successMsg)
 
 if __name__ == '__main__':

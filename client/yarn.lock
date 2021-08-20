@@ -8037,6 +8037,16 @@ mkdirp@^1.0.3, mkdirp@^1.0.4:
   resolved "https://registry.npm.taobao.org/mkdirp/download/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha1-PrXtYmInVteaXw4qIh3+utdcL34=
 
+mobx-react-lite@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.npm.taobao.org/mobx-react-lite/download/mobx-react-lite-3.2.0.tgz#331d7365a6b053378dfe9c087315b4e41c5df69f"
+  integrity sha1-Mx1zZaawUzeN/pwIcxW05Bxd9p8=
+
+mobx@^6.3.2:
+  version "6.3.2"
+  resolved "https://registry.nlark.com/mobx/download/mobx-6.3.2.tgz#125590961f702a572c139ab69392bea416d2e51b"
+  integrity sha1-ElWQlh9wKlcsE5q2k5K+pBbS5Rs=
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.nlark.com/move-concurrently/download/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"

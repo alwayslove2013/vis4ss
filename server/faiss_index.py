@@ -105,7 +105,8 @@ class FaissIndex:
             coarse_ids += self.list_id2vector_ids[list_id]
         coarse_vectors = [self.vectors[id] for id in coarse_ids]
 
-        fit_vectors = coarse_vectors + coarse_centroids
+        # fit_vectors = coarse_vectors + coarse_centroids
+        fit_vectors = coarse_vectors
         projections = get_projections(fit_vectors).tolist()
 
         def get_type(id):
@@ -120,21 +121,22 @@ class FaissIndex:
                 'id': coarse_ids[i],
                 'projection': projections[i],
                 'type': get_type(coarse_ids[i]),
-                'list_id': get_nearest_centriod_and_list_id(fit_vectors[i], self.centroids)
+                'list_id': self.vector_id2list_id[coarse_ids[i]]
             }
             for i in range(len(fit_vectors))
         ]
-        format_res_centroids = [
-            {
-                'id': 'centroid-%d' % get_nearest_centriod_and_list_id(fit_vectors[i]),
-                'projection': projections[i],
-                'type': 'centroid',
-                'list_id': list_ids[i - len(coarse_vectors)]
-            }
-            for i in range(len(coarse_vectors), len(coarse_vectors) + len(coarse_centroids))
-        ]
+        # format_res_centroids = [
+        #     {
+        #         'id': 'centroid-%d' % get_nearest_centriod_and_list_id(fit_vectors[i]),
+        #         'projection': projections[i],
+        #         'type': 'centroid',
+        #         'list_id': list_ids[i - len(coarse_vectors)]
+        #     }
+        #     for i in range(len(coarse_vectors), len(coarse_vectors) + len(coarse_centroids))
+        # ]
+        format_res = format_res_vectors + format_res_centroids
 
-        return format_res_vectors + format_res_centroids
+        return format_res
 
 
 def distance(vector_0, vector_1):
