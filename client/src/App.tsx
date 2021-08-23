@@ -2,13 +2,17 @@ import React from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import { StoreProvider } from "Store";
-import Header from "Views/Header"
+import Header from "Views/Header";
+import ControlPanel from "Views/ControlPanel";
+import TargetShow from "Views/TargetShow";
+import ResultShow from "Views/ResultShow";
+import ProjectionMap from "Views/ProjectionMap";
 
 const useStyles = makeStyles((theme: Theme) => {
   const headerHeight = theme.spacing(4);
-  const leftContainer = "80%";
+  const leftContainer = "84%";
   const border = "1px solid #aaa";
-  const rightTopHeight = "24%";
+  const rightTopHeight = "22%";
   const rightMiddleHeight = "20%";
   const rightBottomHeight = `calc(99% - ${rightTopHeight} - ${rightMiddleHeight})`;
   return {
@@ -35,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftContainer: {
       height: "100%",
-      width: "80%",
+      width: leftContainer,
     },
     rightContainer: {
       height: "100%",
@@ -66,14 +70,22 @@ function App() {
     <StoreProvider>
       <div className={classes.root}>
         <header className={classes.header}>
-          <Header/>
+          <Header />
         </header>
         <div className={classes.mainContainer}>
-          <div className={classes.leftContainer}></div>
+          <div className={classes.leftContainer}>
+            <ProjectionMap />
+          </div>
           <div className={classes.rightContainer}>
-            <div className={classes.rightTopContainer}></div>
-            <div className={classes.rightMiddleContainer}></div>
-            <div className={classes.rightBottomContainer}></div>
+            <div className={classes.rightTopContainer}>
+              <ControlPanel />
+            </div>
+            <div className={classes.rightMiddleContainer}>
+              <TargetShow />
+            </div>
+            <div className={classes.rightBottomContainer}>
+              <ResultShow />
+            </div>
           </div>
         </div>
       </div>

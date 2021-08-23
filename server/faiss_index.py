@@ -1,5 +1,6 @@
 import faiss
 import numpy as np
+import json
 from projection import get_projections
 
 
@@ -13,13 +14,14 @@ class FaissIndex:
         self.has_data = False
         self.names = None
         self.vectors = None
+        self.d = None
 
     def set_data(self, data):
         if len(data) == 0:
             return
         self.has_data = True
         self.names = [d[0] for d in data]
-        self.vectors = [d[1] for d in data]
+        self.vectors = np.array([json.loads(d[1]) for d in data], dtype='float32')
         self.d = len(self.vectors[0])
 
         if self.has_index:
@@ -46,6 +48,7 @@ class FaissIndex:
                 self.init_ivf()
 
                 self.has_index = True
+                print('generate index OK!')
             elif self.index_type == 'hnsw':
                 pass
 
@@ -86,12 +89,13 @@ class FaissIndex:
                 pass
 
     def search_by_name(self, name):
+        if name not in self.names:
+            return False
         target_id = self.names.index(name)
         return self.search_by_id(target_id)
 
     def search_by_id(self, target_id):
         index = self.index
-
         target = np.array([self.vectors[target_id]], dtype='float32')
         _, _fine_ids = self.index.search(target, self.k)
         fine_ids = _fine_ids[0]
@@ -109,7 +113,7 @@ class FaissIndex:
         level_0_nodes_centroids = [
             {
                 'auto_id': 'centroid-%s' % i,
-                'id': 0,
+                'id': -1,
                 'projection': self.centroid_projections[i].tolist(),
                 'type': 'fine' if i in list_ids else 'coarse',
                 'has_cluster': 0,
@@ -155,12 +159,12 @@ class FaissIndex:
                 'have_cluster': 0,
                 'cluster_id': self.vector_id2list_id[coarse_ids[i]],
             }
-            for i in range(len(fit_vectors))
+            for i in range(len(coarse_vectors))
         ]
         level_1_nodes_centroids = [
             {
-                'auto_id': 'centroid-%d' % get_nearest_centriod_and_list_id(fit_vectors[i]),
-                'id': 0,
+                'auto_id': 'centroid-%d' % list_ids[i - len(coarse_vectors)],
+                'id': -1,
                 'projection': projections[i],
                 'type': 'upper_level',
                 'have_cluster': 0,
