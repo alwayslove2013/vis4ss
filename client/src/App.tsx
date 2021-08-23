@@ -1,6 +1,5 @@
 import React from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import { Typography } from "@material-ui/core";
 import { StoreProvider } from "Store";
 import Header from "Views/Header";
 import ControlPanel from "Views/ControlPanel";
@@ -10,9 +9,9 @@ import ProjectionMap from "Views/ProjectionMap";
 
 const useStyles = makeStyles((theme: Theme) => {
   const headerHeight = theme.spacing(4);
-  const leftContainer = "84%";
+  const leftContainer = "82%";
   const border = "1px solid #aaa";
-  const rightTopHeight = "22%";
+  const rightTopHeight = "40%";
   const rightMiddleHeight = "20%";
   const rightBottomHeight = `calc(99% - ${rightTopHeight} - ${rightMiddleHeight})`;
   return {

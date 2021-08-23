@@ -4,6 +4,7 @@ from flask_cors import CORS
 from faiss_index import faissIndex
 import csv
 import io
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +14,7 @@ successMsg = {
     'message': 'ok'
 }
 
+
 @app.route("/set_data", methods=['POST'])
 def set_data():
     fileRead = request.files['file'].stream.read()
@@ -21,28 +23,35 @@ def set_data():
     faissIndex.set_data(data[1:])
     return jsonify(successMsg)
 
+
 @app.route("/index_construct_params")
 def index_construct_params():
     index_type = request.args.get('index_type', 'ivf_flat')
-    params = request.args.get('params', {})
+    params = json.loads(request.args.get('params', "{}"))
+    print('construct_params', params)
     faissIndex.set_index(index_type, params)
     return jsonify(successMsg)
 
+
 @app.route("/index_search_params")
 def index_search_params():
-    params = request.args.get('params', {})
+    params = json.loads(request.args.get('params', "{}"))
+    print('search_params', params)
     faissIndex.set_index_search_params(params)
     return jsonify(successMsg)
+
 
 @app.route("/search_by_id")
 def search_by_id():
     id = request.args.get('id', 0)
     return jsonify(faissIndex.search_by_id(int(id)))
 
+
 @app.route("/search_by_name")
 def search_by_name():
     name = request.args.get('name', '')
     return jsonify(faissIndex.search_by_name(name))
+
 
 if __name__ == '__main__':
     app.run(debug=False, port=12357)

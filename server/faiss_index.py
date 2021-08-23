@@ -16,6 +16,8 @@ class FaissIndex:
         self.vectors = None
         self.d = None
 
+        self.index_is_generated = None
+
     def set_data(self, data):
         if len(data) == 0:
             return
@@ -47,7 +49,7 @@ class FaissIndex:
 
                 self.init_ivf()
 
-                self.has_index = True
+                self.index_is_generated = True
                 print('generate index OK!')
             elif self.index_type == 'hnsw':
                 pass
@@ -79,7 +81,7 @@ class FaissIndex:
         self.max_nlist_size = max_nlist_size
 
     def set_index_search_params(self, params):
-        if self.has_index:
+        if self.index_is_generated:
             if self.index_type == 'ivf_flat':
                 nprobe = params.get('nprobe', 4)
                 self.index.nprobe = nprobe
@@ -95,6 +97,8 @@ class FaissIndex:
         return self.search_by_id(target_id)
 
     def search_by_id(self, target_id):
+        if not self.index_is_generated:
+            return {}
         index = self.index
         target = np.array([self.vectors[target_id]], dtype='float32')
         _, _fine_ids = self.index.search(target, self.k)
