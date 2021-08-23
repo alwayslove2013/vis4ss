@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import {
-  AppBar,
-  Tabs,
-  Tab,
-} from "@material-ui/core";
+import { AppBar, Tabs, Tab } from "@material-ui/core";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import CustomSelect from "Components/CustomSelect";
@@ -17,8 +13,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   inputLabel: {},
   input: {},
-  margin: {
-    // mmargin: theme.spacing(0)
+  params: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    marginTop: 8
   }
 }));
 
@@ -50,7 +49,9 @@ const ControlPanel = observer(() => {
           ))}
         </Tabs>
       </AppBar>
-      {indexTypeIndex === 0 && <IVF_Setting />}
+      <div className={classes.params}>
+        {indexTypeIndex === 0 && <IVF_Setting />}
+      </div>
     </div>
   );
 });
@@ -58,7 +59,8 @@ const ControlPanel = observer(() => {
 const IVF_Setting = () => {
   const store = useGlobalStore();
   const [nlist, setNlist] = useState(32);
-  const { setIndexConstructParams, setIndexSearchParams, setTargetId } = store as any;
+  const { setIndexConstructParams, setIndexSearchParams, setTargetId } =
+    store as any;
   useEffect(() => {
     const params = JSON.stringify({ nlist });
     setIndexConstructParams("ivf_flat", params);
@@ -74,9 +76,9 @@ const IVF_Setting = () => {
   const [id, setId] = useState(0);
   useEffect(() => {
     setTargetId(id);
-  }, [id])
+  }, [id]);
   return (
-    <div>
+    <>
       <CustomSelect
         label="nlist"
         options={numberOptions}
@@ -95,12 +97,13 @@ const IVF_Setting = () => {
         value={topK}
         setValue={setTopK}
       />
-      <CustomInput 
+      <CustomInput
         label="target id"
         type="number"
         value={id}
-        setValue={setId}/>
-    </div>
+        setValue={setId}
+      />
+    </>
   );
 };
 

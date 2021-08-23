@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme: Theme) => {
   const headerHeight = theme.spacing(4);
   const leftContainer = "82%";
   const border = "1px solid #aaa";
-  const rightTopHeight = "40%";
+  const rightTopHeight = "24%";
   const rightMiddleHeight = "20%";
   const rightBottomHeight = `calc(99% - ${rightTopHeight} - ${rightMiddleHeight})`;
   return {
