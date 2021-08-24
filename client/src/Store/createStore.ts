@@ -33,9 +33,18 @@ const createStore = () => {
     async searchById() {
       const id = this.targetId;
       console.log('searchById begin', id)
-      const res = await search_by_id(id);
-      this.searchRes = res as any;
+      const res = await search_by_id(id) as any;
       console.log("get search res", res);
+      if ('data' in res) {
+        this.searchRes = res.data
+        this.numLevel = res.num_level
+      }
+    },
+
+    currentLevel: 0,
+    numLevel: 2,
+    setCurrentLevel(level: number) {
+      this.currentLevel = level
     },
   };
 };

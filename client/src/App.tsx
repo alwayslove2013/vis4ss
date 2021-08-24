@@ -6,10 +6,12 @@ import ControlPanel from "Views/ControlPanel";
 import TargetShow from "Views/TargetShow";
 import ResultShow from "Views/ResultShow";
 import ProjectionMap from "Views/ProjectionMap";
+import LevelControl from "Views/LevelControl";
 
 const useStyles = makeStyles((theme: Theme) => {
   const headerHeight = theme.spacing(4);
   const leftContainer = "82%";
+  const leftTopContainerHeight = "80%";
   const border = "1px solid #aaa";
   const rightTopHeight = "24%";
   const rightMiddleHeight = "20%";
@@ -39,6 +41,17 @@ const useStyles = makeStyles((theme: Theme) => {
     leftContainer: {
       height: "100%",
       width: leftContainer,
+    },
+    leftTopContainer: {
+      height: leftTopContainerHeight,
+      width: "100%",
+      borderBottom: border,
+    },
+    leftBottomContainer: {
+      height: `calc(9% - ${leftTopContainerHeight})`,
+      width: "100%",
+      display: "flex",
+      justifyContent: "center"
     },
     rightContainer: {
       height: "100%",
@@ -73,7 +86,12 @@ function App() {
         </header>
         <div className={classes.mainContainer}>
           <div className={classes.leftContainer}>
-            <ProjectionMap />
+            <div className={classes.leftTopContainer}>
+              <ProjectionMap />
+            </div>
+            <div className={classes.leftBottomContainer}>
+              <LevelControl />
+            </div>
           </div>
           <div className={classes.rightContainer}>
             <div className={classes.rightTopContainer}>
