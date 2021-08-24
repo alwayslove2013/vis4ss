@@ -120,7 +120,6 @@ class FaissIndex:
                 'id': -1,
                 'projection': self.centroid_projections[i].tolist(),
                 'type': 'fine' if i in list_ids else 'coarse',
-                'has_cluster': 0,
             }
             for i in range(index.nlist)
         ]
@@ -129,11 +128,11 @@ class FaissIndex:
             'id': self.names[target_id],
             'projection': self.centroid_projections[index.nlist].tolist(),
             'type': 'target',
-            'has_cluster': 0,
         }]
         format_res_level_0 = {
             'level': 0,
             'fine_centroid_projection': fine_centroid_projection,
+            'have_cluster': 0,
             'nodes': level_0_nodes_centroids + level_0_nodes_target
         }
 
@@ -160,7 +159,6 @@ class FaissIndex:
                 'id': self.names[coarse_ids[i]],
                 'projection': projections[i],
                 'type': get_type(coarse_ids[i]),
-                'have_cluster': 0,
                 'cluster_id': self.vector_id2list_id[coarse_ids[i]],
             }
             for i in range(len(coarse_vectors))
@@ -171,7 +169,6 @@ class FaissIndex:
                 'id': -1,
                 'projection': projections[i],
                 'type': 'upper_level',
-                'have_cluster': 0,
                 'cluster_id': list_ids[i - len(coarse_vectors)]
             }
             for i in range(len(coarse_vectors), len(coarse_vectors) + len(coarse_centroids))
@@ -179,6 +176,7 @@ class FaissIndex:
         format_res_level_1 = {
             'level': 1,
             'fine_centroid_projection': [],
+            'have_cluster': 1,
             'nodes': level_1_nodes_coarse + level_1_nodes_centroids
         }
         

@@ -1,4 +1,5 @@
 import qs from "qs";
+import { IRes } from "Types";
 
 // const baseUrl = "";
 const baseUrl = "http://127.0.0.1:12357/";
@@ -43,5 +44,5 @@ export const search_by_id = (id: number | string) => {
   const url = "search_by_id";
   return fetchData(url, {
     id,
-  });
+  }) as Promise<IRes>;
 };

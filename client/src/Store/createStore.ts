@@ -5,6 +5,8 @@ import {
   set_index_search_params,
   search_by_id,
 } from "Server";
+import { runInAction } from "mobx";
+import { IStore } from "Types";
 
 const indexTypes = ["IVF_Flat", "HNSW"];
 
@@ -15,12 +17,12 @@ const createStore = () => {
     setIndexTypeIndex(typeIndex: number) {
       this.indexTypeIndex = typeIndex;
     },
+
     targetId: 0,
     setTargetId(id: number) {
       this.targetId = id;
       this.searchById();
     },
-    searchRes: {},
     async setData(file: File) {
       await set_data(file);
     },
@@ -30,23 +32,26 @@ const createStore = () => {
     async setIndexSearchParams(params: any) {
       await set_index_search_params(params);
     },
+    levelsData: [],
     async searchById() {
       const id = this.targetId;
-      console.log('searchById begin', id)
-      const res = await search_by_id(id) as any;
+      console.log("searchById begin", id);
+      const res = await search_by_id(id);
       console.log("get search res", res);
-      if ('data' in res) {
-        this.searchRes = res.data
-        this.numLevel = res.num_level
+      if ("data" in res) {
+        runInAction(() => {
+          this.levelsData = res.data;
+          this.numLevel = res.num_level;
+        });
       }
     },
 
     currentLevel: 0,
     numLevel: 2,
     setCurrentLevel(level: number) {
-      this.currentLevel = level
+      this.currentLevel = level;
     },
-  };
+  } as IStore;
 };
 
 export default createStore;

@@ -50,13 +50,13 @@ const ControlPanel = observer(() => {
         </Tabs>
       </AppBar>
       <div className={classes.params}>
-        {indexTypeIndex === 0 && <IVF_Setting />}
+        {indexTypeIndex === 0 && <IVFSetting />}
       </div>
     </div>
   );
 });
 
-const IVF_Setting = () => {
+const IVFSetting = () => {
   const store = useGlobalStore();
   const [nlist, setNlist] = useState(32);
   const { setIndexConstructParams, setIndexSearchParams, setTargetId } =
@@ -64,19 +64,19 @@ const IVF_Setting = () => {
   useEffect(() => {
     const params = JSON.stringify({ nlist });
     setIndexConstructParams("ivf_flat", params);
-  }, [nlist]);
+  }, [nlist, setIndexConstructParams]);
   const [nprobe, setNprobe] = useState(4);
   const [topK, setTopK] = useState(8);
   useEffect(() => {
     const params = JSON.stringify({ nprobe, k: topK });
     setIndexSearchParams(params);
-  }, [nprobe, topK]);
+  }, [nprobe, topK, setIndexSearchParams]);
   const numberOptions = [4, 8, 16, 32, 128, 256];
 
   const [id, setId] = useState(0);
   useEffect(() => {
     setTargetId(id);
-  }, [id]);
+  }, [id, setTargetId]);
   return (
     <>
       <CustomSelect
