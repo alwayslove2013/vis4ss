@@ -52,6 +52,9 @@ def search_by_name():
     name = request.args.get('name', '')
     return jsonify(faissIndex.search_by_name(name))
 
+@app.route('/images/<filename>')
+def get_file_by_id(filename):
+    return send_from_directory('/Users/mintian/minmin/data/JPEGImages', filename)
 
 if __name__ == '__main__':
     app.run(debug=False, port=12357)

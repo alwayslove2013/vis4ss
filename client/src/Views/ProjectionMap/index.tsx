@@ -1,6 +1,7 @@
 import React from "react";
 import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
+import { toJS } from "mobx";
 import * as d3 from "d3";
 import { useClientRect } from "Hooks";
 import { INode } from "Types";
@@ -17,8 +18,7 @@ const ProjectionMap = observer(() => {
   if (levelsData.length === 0)
     return <svg id={svgId} width="100%" height="100%"></svg>;
 
-  const { nodes, have_cluster } =
-    levelsData[currentLevel];
+  const { nodes, have_cluster } = levelsData[currentLevel];
 
   const x = d3
     .scaleLinear()
@@ -74,7 +74,10 @@ const ProjectionMap = observer(() => {
             cx={pos.x}
             cy={pos.y}
             fill={color(node)}
-            opacity={node.type === 'coarse' ? 0.3 : 0.8}
+            opacity={node.type === "coarse" ? 0.2 : 0.8}
+            stroke={node.type === "fine" ? "red" : ""}
+            strokeWidth={node.type === "fine" ? 2 : 0}
+            onClick={() => console.log(toJS(node))}
           />
         );
       })}

@@ -17,8 +17,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "space-around",
-    marginTop: 8
-  }
+    marginTop: 8,
+  },
 }));
 
 const a11yProps = (index: any) => ({
@@ -51,16 +51,61 @@ const ControlPanel = observer(() => {
       </AppBar>
       <div className={classes.params}>
         {indexTypeIndex === 0 && <IVFSetting />}
+        {indexTypeIndex === 1 && <HNSWSetting />}
       </div>
     </div>
   );
 });
 
+const HNSWSetting = () => {
+  const store = useGlobalStore();
+  const { setIndexConstructParams, setIndexSearchParams, setTargetId } = store;
+
+  const [m, setM] = useState(32);
+  useEffect(() => {
+    const params = JSON.stringify({ m });
+    setIndexConstructParams("hnsw", params);
+  }, [m, setIndexConstructParams]);
+  const [topK, setTopK] = useState(8);
+  useEffect(() => {
+    const params = JSON.stringify({ k: topK });
+    setIndexSearchParams(params);
+  }, [topK, setIndexSearchParams]);
+
+  const [id, setId] = useState(0);
+  useEffect(() => {
+    setTargetId(id);
+  }, [id, setTargetId]);
+
+  const numberOptions = [4, 8, 16, 32, 64, 128, 256];
+  return (
+    <>
+      <CustomSelect
+        label="M"
+        options={numberOptions}
+        value={m}
+        setValue={setM}
+      />
+      <CustomSelect
+        label="top k"
+        options={numberOptions}
+        value={topK}
+        setValue={setTopK}
+      />
+      <CustomInput
+        label="target id"
+        type="number"
+        value={id}
+        setValue={setId}
+      />
+    </>
+  );
+};
+
 const IVFSetting = () => {
   const store = useGlobalStore();
   const [nlist, setNlist] = useState(32);
-  const { setIndexConstructParams, setIndexSearchParams, setTargetId } =
-    store as any;
+  const { setIndexConstructParams, setIndexSearchParams, setTargetId } = store;
   useEffect(() => {
     const params = JSON.stringify({ nlist });
     setIndexConstructParams("ivf_flat", params);
@@ -71,7 +116,7 @@ const IVFSetting = () => {
     const params = JSON.stringify({ nprobe, k: topK });
     setIndexSearchParams(params);
   }, [nprobe, topK, setIndexSearchParams]);
-  const numberOptions = [4, 8, 16, 32, 128, 256];
+  const numberOptions = [4, 8, 16, 32, 64, 128, 256];
 
   const [id, setId] = useState(0);
   useEffect(() => {

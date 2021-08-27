@@ -2,6 +2,7 @@ import faiss
 import numpy as np
 import json
 from projection import get_projections
+from hnsw_search import search_vis_hnsw
 
 
 class FaissIndex:
@@ -50,9 +51,16 @@ class FaissIndex:
                 self.init_ivf()
 
                 self.index_is_generated = True
-                print('generate index OK!')
+                print('generate index OK! -- IVF_Flat')
             elif self.index_type == 'hnsw':
-                pass
+                m = self.index_params.get('m', 32)
+                index = faiss.index_factory(self.d, 'HNSW%s' % m)
+                self.index = index
+                self.k = 8
+                self.index.train(self.vectors)
+                self.index.add(self.vectors)
+                self.index_is_generated = True
+                print('generate index OK! -- HNSW')
 
     def init_ivf(self):
         index = self.index
@@ -88,7 +96,8 @@ class FaissIndex:
                 k = params.get('k', 8)
                 self.k = k
             elif self.index_type == 'hnsw':
-                pass
+                k = params.get('k', 8)
+                self.k = k
 
     def search_by_name(self, name):
         if name not in self.names:
@@ -99,8 +108,20 @@ class FaissIndex:
     def search_by_id(self, target_id):
         if not self.index_is_generated:
             return {}
-        index = self.index
         target = np.array([self.vectors[target_id]], dtype='float32')
+
+        if self.index_type == 'ivf_flat':
+            return self.ivf_search(target, target_id)
+
+        if self.index_type == 'hnsw':
+            hnsw = self.index.hnsw
+            return search_vis_hnsw(hnsw, self.vectors, self.names, target, target_id, self.k)
+
+        return {}
+
+    def ivf_search(self, target, target_id):
+        index = self.index
+        
         _, _fine_ids = self.index.search(target, self.k)
         fine_ids = _fine_ids[0]
 

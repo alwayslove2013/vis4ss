@@ -1,4 +1,4 @@
-export type TNodeType = "target" | "fine" | "coarse" | "upper_level";
+export type TNodeType = "target" | "fine" | "candidate" | "coarse" | "upper_level";
 
 export interface INode {
   auto_id: string;
