@@ -54,8 +54,8 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
             for i in range(len(all_nodes_id))
         ] + [
             {
-                'auto_id': target_id,
-                'id': names[target_id],
+                'auto_id': 'target',
+                'id': 'target',
                 'projection': projections[-1],
                 'type': 'target'
             }

@@ -5,6 +5,7 @@ import { useGlobalStore } from "Store";
 import { observer } from "mobx-react-lite";
 import CustomSelect from "Components/CustomSelect";
 import CustomInput from "Components/CustomInput";
+import { type } from "os";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
