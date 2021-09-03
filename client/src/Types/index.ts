@@ -1,4 +1,9 @@
-export type TNodeType = "target" | "fine" | "candidate" | "coarse" | "upper_level";
+export type TNodeType =
+  | "target"
+  | "fine"
+  | "candidate"
+  | "coarse"
+  | "upper_level";
 
 export interface INode {
   auto_id: string;
@@ -8,18 +13,22 @@ export interface INode {
   cluster_id?: number;
 }
 
+export type TLink = [number, number, number];
+
 export interface ILevel {
   fine_centroid_projection: [number, number];
   level: number;
   have_cluster: number;
   nodes: INode[];
+  have_links: number;
+  candidate_links: TLink[];
+  links: TLink[];
 }
 
 export interface IRes {
   data: ILevel[];
   num_level: number;
 }
-
 
 export interface IStore {
   indexTypeList: string[];

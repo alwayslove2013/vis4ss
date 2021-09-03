@@ -7,6 +7,7 @@ import { useClientRect } from "Hooks";
 import { INode } from "Types";
 
 const colors = d3.schemeTableau10;
+const showLinks = true;
 
 const ProjectionMap = observer(() => {
   const svgId = "projection-svg";
@@ -14,11 +15,17 @@ const ProjectionMap = observer(() => {
   const padding = { left: 30, top: 30, right: 30, bottom: 30 };
 
   const store = useGlobalStore();
-  const { levelsData, currentLevel } = store;
+  const { levelsData, currentLevel, targetId } = store;
   if (levelsData.length === 0)
     return <svg id={svgId} width="100%" height="100%"></svg>;
 
-  const { nodes, have_cluster } = levelsData[currentLevel];
+  const { nodes, have_cluster, have_links } = levelsData[currentLevel];
+
+  const links = have_links ? levelsData[currentLevel].candidate_links : [];
+  const autoId2node: { [key: string]: INode } = {};
+  nodes.forEach((node) => {
+    autoId2node[node.auto_id] = node;
+  });
 
   const x = d3
     .scaleLinear()
@@ -44,43 +51,72 @@ const ProjectionMap = observer(() => {
 
   return (
     <svg id={svgId} width="100%" height="100%">
-      {nodes.map((node) => {
-        const pos = {
-          x: x(node.projection[0]),
-          y: y(node.projection[1]),
-        };
-        if (node.type === "target") {
+      <g id={`${svgId}-links`}>
+        {showLinks &&
+          links &&
+          links
+            .filter((link) => link[0] != targetId && link[1] != targetId)
+            .map((link) => {
+              const sourceNode = autoId2node[link[0]];
+              const sourcePos = {
+                x: x(sourceNode.projection[0]),
+                y: y(sourceNode.projection[1]),
+              };
+              const targetNode = autoId2node[link[1]];
+              const targetPos = {
+                x: x(targetNode.projection[0]),
+                y: y(targetNode.projection[1]),
+              };
+              const d = `M${sourcePos.x},${sourcePos.y}L${targetPos.x},${targetPos.y}`;
+              return (
+                <path
+                  key={`path-${link[0]}-${link[1]}`}
+                  d={d}
+                  stroke="#ccc"
+                  strokeWidth="2"
+                />
+              );
+            })}
+      </g>
+      <g id={`${svgId}-nodes`}>
+        {nodes.map((node) => {
+          const pos = {
+            x: x(node.projection[0]),
+            y: y(node.projection[1]),
+          };
+          if (node.type === "target") {
+            return (
+              <path
+                key={node.auto_id}
+                d={getStar(pos.x, pos.y, size * 10)}
+                fill="red"
+              />
+            );
+          }
+          if (node.type === "upper_level") {
+            return (
+              <path
+                key={node.auto_id}
+                d={getPolygon(pos.x, pos.y, size * 3, 3)}
+                fill={color(node)}
+              />
+            );
+          }
           return (
-            <path
+            <circle
               key={node.auto_id}
-              d={getStar(pos.x, pos.y, size * 10)}
-              fill="red"
-            />
-          );
-        }
-        if (node.type === "upper_level") {
-          return (
-            <path
-              key={node.auto_id}
-              d={getPolygon(pos.x, pos.y, size * 3, 3)}
+              r={size}
+              cx={pos.x}
+              cy={pos.y}
               fill={color(node)}
+              opacity={node.type === "coarse" ? 0.2 : 0.8}
+              stroke={node.type === "fine" ? "red" : ""}
+              strokeWidth={node.type === "fine" ? 2 : 0}
+              onClick={() => console.log(toJS(node))}
             />
           );
-        }
-        return (
-          <circle
-            key={node.auto_id}
-            r={size}
-            cx={pos.x}
-            cy={pos.y}
-            fill={color(node)}
-            opacity={node.type === "coarse" ? 0.2 : 0.8}
-            stroke={node.type === "fine" ? "red" : ""}
-            strokeWidth={node.type === "fine" ? 2 : 0}
-            onClick={() => console.log(toJS(node))}
-          />
-        );
-      })}
+        })}
+      </g>
     </svg>
   );
 });

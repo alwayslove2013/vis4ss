@@ -154,7 +154,9 @@ class FaissIndex:
             'level': 0,
             'fine_centroid_projection': fine_centroid_projection,
             'have_cluster': 0,
-            'nodes': level_0_nodes_centroids + level_0_nodes_target
+            'nodes': level_0_nodes_centroids + level_0_nodes_target,
+            'have_links': 1,
+            'links': [],
         }
 
         coarse_centroids = [self.centroids[list_id] for list_id in list_ids]
@@ -198,7 +200,9 @@ class FaissIndex:
             'level': 1,
             'fine_centroid_projection': [],
             'have_cluster': 1,
-            'nodes': level_1_nodes_coarse + level_1_nodes_centroids
+            'nodes': level_1_nodes_coarse + level_1_nodes_centroids,
+            'have_links': 1,
+            'links': [],
         }
         
         format_res = {

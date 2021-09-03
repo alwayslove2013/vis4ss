@@ -2,6 +2,9 @@ import faiss
 import numpy as np
 from heapq import heappop, heappush
 from projection import get_projections
+from collections import defaultdict
+from enum import Enum
+
 
 def search_vis_hnsw(hnsw, data, names, target, target_id, k):
     global vectors, entry_point, max_level, cum_nneighbor_per_level, levels, offsets, neighbors
@@ -32,11 +35,15 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
         upper_level = vis_res[level]['eps']
         candidates = vis_res[level]['candidates']
         fines = vis_res[level]['fines']
-        fine_node_ids = [i for i in range(len(all_nodes_id)) if all_nodes_id[i] in fines]
+        fine_node_ids = [i for i in range(
+            len(all_nodes_id)) if all_nodes_id[i] in fines]
         fine_centroid_projection = projections[fine_node_ids].mean(0).tolist()
         projections = projections.tolist()
         level_res = {}
+
         def get_type(id):
+            if id == target_id:
+                return 'target'
             if id in upper_level:
                 return 'upper_level'
             if id in fines:
@@ -60,22 +67,34 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
                 'type': 'target'
             }
         ]
-        
+
+        level_links = vis_res[level]['links']
         level_res = {
             'level': max_level - level,
             'fine_centroid_projection': fine_centroid_projection,
             'have_cluster': 0,
-            'nodes': level_nodes
+            'nodes': level_nodes,
+            'have_links': 1,
+            'links': level_links,
         }
         format_res['data'].append(level_res)
 
     return format_res
 
 
-def search_layer(target, eps, ef, level):
+Based = 1
+Visited = 2
+Extended = 3
+JumpTo = 4
+Fine = 5
+
+
+def search_layer(target, eps, ef, level, k):
     visited = set()
     candidates = []
     waiting_list = []
+    links = defaultdict(int)
+    source = defaultdict(int)
 
     for ep in eps:
         visited.add(ep)
@@ -94,37 +113,64 @@ def search_layer(target, eps, ef, level):
             break
         c_neighbors = get_neighbors_with_levels(c[2])[level]
         for e in c_neighbors:
+            links[(c[2], e)] = max(links[(c[2], e)], Visited)
             if e not in visited:
                 visited.add(e)
+                links[(c[2], e)] = max(links[(c[2], e)], Extended)
                 f = waiting_list[0]
                 e_dis = distance(target, vectors[e])
                 if e_dis < f[1] or len(waiting_list) < ef:
+                    links[(c[2], e)] = max(links[(c[2], e)], JumpTo)
+                    source[e] = c[2]
                     heappush(candidates, (e_dis, e_dis, e))
                     heappush(waiting_list, (-e_dis, e_dis, e))
                     if len(waiting_list) > ef:
                         heappop(waiting_list)
-                    
+
                     vis_candidates.append(e)
-                    vis_candidates_link.append([c[2], e])
+                    vis_candidates_link.append([int(c[2]), int(e)])
 
     waiting_list.sort(key=lambda x: x[1])
+    if level == 0:
+        waiting_list = waiting_list[:k]
     fine_res = [w[2] for w in waiting_list]
+    for fine_id in fine_res:
+        target_id = fine_id
+        if target_id not in source:
+            continue
+        source_id = source[target_id]
+        while source_id != target_id:
+            links[(target_id, source_id)] = Fine
+            target_id = source_id
+            if target_id not in source:
+                break
+            source_id = source[target_id]
+    
+    for node_id in visited:
+        neighbors = get_neighbors_with_levels(node_id)[level]
+        for n in neighbors:
+            if n in visited:
+                links[(node_id, n)] = max(links[(node_id, n)], Based)
+    
+    links_format_res = [[path[0], path[1], links[path]] for path in links]
 
     vis_data = {
         'nodes': list(visited),
         'eps': eps[:],
         'candidates': vis_candidates,
-        'candidates_link': vis_candidates_link,
-    }    
-    
+        'links': links_format_res
+    }
+
     return fine_res, vis_data
+
 
 def search(target, k, ef):
     eps = [entry_point]
     vis_res = {}
     for i in range(max_level + 1):
         level = max_level - i
-        waiting_list, vis_data = search_layer(target, eps, ef if level == 0 else 1, level)
+        waiting_list, vis_data = search_layer(
+            target, eps, ef if level == 0 else 1, level, k)
         eps = waiting_list
         vis_data['fines'] = waiting_list[:]
         vis_res[level] = vis_data
@@ -133,9 +179,10 @@ def search(target, k, ef):
     vis_res[0]['fines'] = waiting_list[:k]
     return search_res, vis_res
 
+
 def get_neighbors_with_levels(id):
     level = levels[id]
-    all_neighbors = neighbors[offsets[id]: offsets[id + 1]]
+    all_neighbors = [int(x) for x in neighbors[offsets[id]: offsets[id + 1]]]
     level_neighbors = {
         i: [
             node
@@ -148,6 +195,16 @@ def get_neighbors_with_levels(id):
         for i in range(level)
     }
     return level_neighbors
+
+
+def get_based_links(ids, level):
+    based_links = []
+    for id in ids:
+        neighbors = get_neighbors_with_levels(id)[level]
+        for n in neighbors:
+            if n in ids:
+                based_links.append([int(id), int(n)])
+    return based_links
 
 
 def get_all_neighbors(id):

@@ -6,7 +6,10 @@ import ControlPanel from "Views/ControlPanel";
 import TargetShow from "Views/TargetShow";
 import ResultShow from "Views/ResultShow";
 import ProjectionMap from "Views/ProjectionMap";
+import ForceMap from "Views/ForceMap";
 import LevelControl from "Views/LevelControl";
+
+const showForce = true;
 
 const useStyles = makeStyles((theme: Theme) => {
   const headerHeight = theme.spacing(4);
@@ -51,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: `calc(9% - ${leftTopContainerHeight})`,
       width: "100%",
       display: "flex",
-      justifyContent: "center"
+      justifyContent: "center",
     },
     rightContainer: {
       height: "100%",
@@ -87,7 +90,7 @@ function App() {
         <div className={classes.mainContainer}>
           <div className={classes.leftContainer}>
             <div className={classes.leftTopContainer}>
-              <ProjectionMap />
+              {showForce ? <ForceMap /> : <ProjectionMap />}
             </div>
             <div className={classes.leftBottomContainer}>
               <LevelControl />
