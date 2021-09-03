@@ -13,7 +13,7 @@ export interface INode {
   cluster_id?: number;
 }
 
-export type TLink = [number, number, number];
+export type TLink = [number | string, number | string, number];
 
 export interface ILevel {
   fine_centroid_projection: [number, number];

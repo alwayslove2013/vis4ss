@@ -42,8 +42,8 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
         level_res = {}
 
         def get_type(id):
-            if id == target_id:
-                return 'target'
+            # if id == target_id:
+            #     return 'target'
             if id in upper_level:
                 return 'upper_level'
             if id in fines:
@@ -140,11 +140,13 @@ def search_layer(target, eps, ef, level, k):
             continue
         source_id = source[target_id]
         while source_id != target_id:
-            links[(target_id, source_id)] = Fine
+            links[(source_id, target_id)] = Fine
             target_id = source_id
             if target_id not in source:
                 break
             source_id = source[target_id]
+        
+        links[(fine_id, 'target')] = Fine
     
     for node_id in visited:
         neighbors = get_neighbors_with_levels(node_id)[level]

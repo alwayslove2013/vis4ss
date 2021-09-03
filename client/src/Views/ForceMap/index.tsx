@@ -69,7 +69,7 @@ const ForceMap = observer(() => {
       )
     );
     const links = levelsData[currentLevel].links
-      ?.filter((link) => link[2] >= 2)
+      ?.filter((link) => link[2] >= 3)
       .map((link) => ({
         target: `${link[0]}`,
         source: `${link[1]}`,
@@ -85,8 +85,10 @@ const ForceMap = observer(() => {
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-opacity", link => link.type === 5 ? 1 : 0.2)
-      .attr("stroke-width", link => link.type === 5 ? 5 : 1);
+      .attr("stroke-opacity", (link) =>
+        link.type === 5 ? (link.source === "target" ? 0 : 1) : 0.2
+      )
+      .attr("stroke-width", (link) => (link.type === 5 ? 5 : 1));
 
     const node = svg
       .append("g")
@@ -95,7 +97,7 @@ const ForceMap = observer(() => {
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("id", (d) => d.auto_id)
+      // .attr("id", (d) => d.auto_id)
       .attr("r", 5)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
@@ -107,6 +109,7 @@ const ForceMap = observer(() => {
       .force(
         "link",
         d3.forceLink(links).id((d) => (d as any).auto_id)
+        // .strength(d => d.type >= 3 ? 0.5 : 0.1)
       )
       .force("charge", d3.forceManyBody())
       .force("center", d3.forceCenter(width / 2, height / 2));
