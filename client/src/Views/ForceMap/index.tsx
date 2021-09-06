@@ -53,9 +53,9 @@ const ForceMap = observer(() => {
       const TypeMap = ["upper_level", "fine", "candidate", "coarse", "target"];
       color = (node: INode) => {
         if (node.type === "target") return "red";
-        if (node.type === "upper_level") return "green";
+        if (node.type === "upper_level") return "blue";
         if (node.type === "fine") return "yellow";
-        if (node.type === "candidate") return "black";
+        if (node.type === "candidate") return "#aaa";
         return "#eee";
       };
     }
