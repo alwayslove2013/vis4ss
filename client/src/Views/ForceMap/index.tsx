@@ -63,13 +63,15 @@ const ForceMap = observer(() => {
     const nodes = levelsData[currentLevel].nodes.map((node) =>
       Object.assign(
         {},
-        { x: x(node.projection[0]), y: y(node.projection[1]) },
         toJS(node),
-        { id: node.auto_id }
+        { x: x(node.projection[0]), y: y(node.projection[1]) },
+        node.type === "upper_level" || node.type === "fine" || node.type === "candidate"
+          ? { fx: x(node.projection[0]), fy: y(node.projection[1]) }
+          : {}
       )
     );
     const links = levelsData[currentLevel].links
-      ?.filter((link) => link[2] >= 3)
+      ?.filter((link) => link[2] >= 2)
       .map((link) => ({
         target: `${link[0]}`,
         source: `${link[1]}`,
@@ -99,8 +101,8 @@ const ForceMap = observer(() => {
       .join("circle")
       // .attr("id", (d) => d.auto_id)
       .attr("r", 5)
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
+      // .attr("cx", (d) => d.x)
+      // .attr("cy", (d) => d.y)
       .attr("fill", color)
       .on("click", (e, d) => console.log(d.auto_id, d));
 

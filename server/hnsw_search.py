@@ -1,10 +1,8 @@
 import faiss
 import numpy as np
 from heapq import heappop, heappush
-from projection import get_projections
+from projection import get_umap_projections, get_mds_projections
 from collections import defaultdict
-from enum import Enum
-
 
 def search_vis_hnsw(hnsw, data, names, target, target_id, k):
     global vectors, entry_point, max_level, cum_nneighbor_per_level, levels, offsets, neighbors
@@ -30,15 +28,25 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
             continue
         all_nodes = vectors[all_nodes_id].tolist()
         fit_vectors = all_nodes + target.tolist()
-        projections = get_projections(fit_vectors)
+        projections = get_umap_projections(fit_vectors)
 
         upper_level = vis_res[level]['eps']
         candidates = vis_res[level]['candidates']
         fines = vis_res[level]['fines']
+        if len(candidates) <= 1:
+            continue
         fine_node_ids = [i for i in range(
             len(all_nodes_id)) if all_nodes_id[i] in fines]
         fine_centroid_projection = projections[fine_node_ids].mean(0).tolist()
         projections = projections.tolist()
+
+        candidates_vectors = vectors[candidates].tolist()
+        _mds_projections = get_mds_projections(candidates_vectors).tolist()
+        mds_projections = {}
+        for i in range(len(candidates_vectors)):
+            mds_projections[candidates[i]] = _mds_projections[i]
+
+
         level_res = {}
 
         def get_type(id):
@@ -55,7 +63,11 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
             {
                 'auto_id': '%s' % all_nodes_id[i],
                 'id': names[all_nodes_id[i]],
-                'projection': projections[i],
+                'projection': 
+                    [0, 0]
+                    # projections[i]
+                    if all_nodes_id[i] not in mds_projections 
+                    else mds_projections[all_nodes_id[i]],
                 'type': get_type(all_nodes_id[i])
             }
             for i in range(len(all_nodes_id))
@@ -63,7 +75,10 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
             {
                 'auto_id': 'target',
                 'id': 'target',
-                'projection': projections[-1],
+                'projection': 
+                    [0, 0]
+                    # projections[i]
+                    ,
                 'type': 'target'
             }
         ]
@@ -81,13 +96,11 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
 
     return format_res
 
-
 Based = 1
 Visited = 2
 Extended = 3
 JumpTo = 4
 Fine = 5
-
 
 def search_layer(target, eps, ef, level, k):
     visited = set()
@@ -145,15 +158,15 @@ def search_layer(target, eps, ef, level, k):
             if target_id not in source:
                 break
             source_id = source[target_id]
-        
+
         links[(fine_id, 'target')] = Fine
-    
+
     for node_id in visited:
         neighbors = get_neighbors_with_levels(node_id)[level]
         for n in neighbors:
             if n in visited:
                 links[(node_id, n)] = max(links[(node_id, n)], Based)
-    
+
     links_format_res = [[path[0], path[1], links[path]] for path in links]
 
     vis_data = {
@@ -164,7 +177,6 @@ def search_layer(target, eps, ef, level, k):
     }
 
     return fine_res, vis_data
-
 
 def search(target, k, ef):
     eps = [entry_point]
@@ -180,7 +192,6 @@ def search(target, k, ef):
     search_res = waiting_list[:k]
     vis_res[0]['fines'] = waiting_list[:k]
     return search_res, vis_res
-
 
 def get_neighbors_with_levels(id):
     level = levels[id]
@@ -198,7 +209,6 @@ def get_neighbors_with_levels(id):
     }
     return level_neighbors
 
-
 def get_based_links(ids, level):
     based_links = []
     for id in ids:
@@ -207,7 +217,6 @@ def get_based_links(ids, level):
             if n in ids:
                 based_links.append([int(id), int(n)])
     return based_links
-
 
 def get_all_neighbors(id):
     all_neighbors = neighbors[offsets[id]: offsets[id + 1]]
