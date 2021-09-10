@@ -108,8 +108,10 @@ const ForceMap = observer(() => {
       .forceSimulation(nodes)
       .force(
         "link",
-        d3.forceLink(links).id((d) => (d as any).auto_id)
-        // .strength(d => d.type >= 3 ? 0.5 : 0.1)
+        d3
+          .forceLink(links)
+          .id((d) => (d as any).auto_id)
+          .strength((d) => 1)
       )
       .force("charge", d3.forceManyBody())
       .force("center", d3.forceCenter(width / 2, height / 2));
