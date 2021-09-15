@@ -85,9 +85,7 @@ const ForceMap = observer(() => {
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-opacity", (link) =>
-        link.type === 5 ? (link.source === "target" ? 0 : 1) : 0.2
-      )
+      .attr("stroke-opacity", 0)
       .attr("stroke-width", (link) => (link.type === 5 ? 5 : 1));
 
     const node = svg
@@ -101,8 +99,12 @@ const ForceMap = observer(() => {
       .attr("r", 5)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
+      .attr("id", (d) => `node-${d.auto_id}`)
+      .attr("opacity", 0)
       .attr("fill", color)
       .on("click", (e, d) => console.log(d.auto_id, d));
+    
+    d3.select(`#node-target`).attr("opacity", 1);
 
     const simulation = d3
       .forceSimulation(nodes)
@@ -125,7 +127,40 @@ const ForceMap = observer(() => {
 
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     });
-    return () => simulation.stop();
+
+    const linkAnimation = setTimeout(() => {
+      const link = svg
+        .append("g")
+        .attr("stroke", "#999")
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("stroke-opacity", (link) => 0)
+        .attr("stroke-width", (link) => (link.type === 5 ? 5 : 1))
+        .attr("x1", (d) => (d as any).source.x)
+        .attr("y1", (d) => (d as any).source.y)
+        .attr("x2", (d) => (d as any).target.x)
+        .attr("y2", (d) => (d as any).target.y);
+      link
+        .transition()
+        .duration(50)
+        .delay((d, i) => i * 100)
+        .attr("stroke-opacity", (link) =>
+          link.type === 5
+            ? (link.source as any).type === "target"
+              ? 0
+              : 1
+            : 0.2
+        )
+        .on("end", (d) => {
+          d3.select(`#node-${(d.target as any).auto_id}`).attr("opacity", 1);
+          d3.select(`#node-${(d.source as any).auto_id}`).attr("opacity", 1);
+        });
+    }, 5000);
+    return () => {
+      simulation.stop();
+      clearTimeout(linkAnimation);
+    };
   }, [levelsData, currentLevel]);
 
   return <svg id={svgId} width="100%" height="100%"></svg>;
