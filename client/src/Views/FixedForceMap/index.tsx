@@ -99,10 +99,14 @@ const FixedForceMap = observer(() => {
       .join("circle")
       // .attr("id", (d) => d.auto_id)
       .attr("r", 5)
+      .attr("id", (d) => `node-${d.auto_id}`)
+      .attr("opacity", 0)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("fill", color)
       .on("click", (e, d) => console.log(d.auto_id, d));
+
+    d3.select(`#node-target`).attr("opacity", 1);
 
     const simulation = d3
       .forceSimulation(nodes)
@@ -136,14 +140,18 @@ const FixedForceMap = observer(() => {
       link
         .transition()
         .duration(50)
-        .delay((d, i) => i * 500)
+        .delay((d, i) => i * 150)
         .attr("stroke-opacity", (link) =>
           link.type === 5
             ? (link.source as any).type === "target"
               ? 0
-              : 1
+              : 0.8
             : 0.2
-        );
+        )
+        .on("end", (d) => {
+          d3.select(`#node-${(d.target as any).auto_id}`).attr("opacity", 1);
+          d3.select(`#node-${(d.source as any).auto_id}`).attr("opacity", 1);
+        });
     }, 5000);
 
     return () => {
