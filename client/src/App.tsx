@@ -7,6 +7,7 @@ import TargetShow from "Views/TargetShow";
 import ResultShow from "Views/ResultShow";
 import ProjectionMap from "Views/ProjectionMap";
 import ForceMap from "Views/ForceMap";
+import FixedForceMap from "Views/FixedForceMap";
 import LevelControl from "Views/LevelControl";
 
 const showForce = true;
@@ -90,7 +91,7 @@ function App() {
         <div className={classes.mainContainer}>
           <div className={classes.leftContainer}>
             <div className={classes.leftTopContainer}>
-              {showForce ? <ForceMap /> : <ProjectionMap />}
+              {showForce ? <FixedForceMap /> : <ProjectionMap />}
             </div>
             <div className={classes.leftBottomContainer}>
               <LevelControl />
