@@ -51,11 +51,24 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
             if id in candidates:
                 return 'candidate'
             return 'coarse'
+
+        diss = {
+            id: float(distance(vectors[id], target))
+            for id in all_nodes_id if id != target_id
+        }
+        diss_list = diss.values()
+        min_dis = min(diss_list)
+        max_dis = max(diss_list)
+        step = (max_dis - min_dis) * 0.02
+        diss['target'] = min_dis - step * 3
+        diss[target_id] = min_dis - step
+
         level_nodes = [
             {
                 'auto_id': '%s' % all_nodes_id[i],
                 'id': names[all_nodes_id[i]],
                 'projection': projections[i],
+                'dis': diss[all_nodes_id[i]],
                 'type': get_type(all_nodes_id[i])
             }
             for i in range(len(all_nodes_id))
@@ -64,6 +77,7 @@ def search_vis_hnsw(hnsw, data, names, target, target_id, k):
                 'auto_id': 'target',
                 'id': 'target',
                 'projection': projections[-1],
+                'dis': diss['target'],
                 'type': 'target'
             }
         ]
@@ -108,6 +122,7 @@ def search_layer(target, eps, ef, level, k):
 
     while len(candidates) > 0:
         c = heappop(candidates)
+        vis_candidates.append(int(c[2]))
         f = waiting_list[0]
         if c[1] > f[1]:
             break
@@ -127,7 +142,7 @@ def search_layer(target, eps, ef, level, k):
                     if len(waiting_list) > ef:
                         heappop(waiting_list)
 
-                    vis_candidates.append(e)
+                    # vis_candidates.append(e)
                     vis_candidates_link.append([int(c[2]), int(e)])
 
     waiting_list.sort(key=lambda x: x[1])
@@ -145,15 +160,15 @@ def search_layer(target, eps, ef, level, k):
             if target_id not in source:
                 break
             source_id = source[target_id]
-        
+
         links[(fine_id, 'target')] = Fine
-    
+
     for node_id in visited:
         neighbors = get_neighbors_with_levels(node_id)[level]
         for n in neighbors:
             if n in visited:
                 links[(node_id, n)] = max(links[(node_id, n)], Based)
-    
+
     links_format_res = [[path[0], path[1], links[path]] for path in links]
 
     vis_data = {

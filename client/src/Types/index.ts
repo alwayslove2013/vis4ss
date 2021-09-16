@@ -9,6 +9,7 @@ export interface INode {
   auto_id: string;
   id: string;
   projection: [number, number];
+  dis: number;
   type: TNodeType;
   cluster_id?: number;
 }
