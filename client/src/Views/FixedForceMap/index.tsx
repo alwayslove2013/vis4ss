@@ -42,6 +42,18 @@ const FixedForceMap = observer(() => {
       )
       .nice()
       .range([padding.top, height - padding.bottom]);
+
+    const r = d3
+      .scaleLinear()
+      .domain(
+        d3.extent(levelsData[currentLevel].nodes, (d) => d.dis) as [
+          number,
+          number
+        ]
+      )
+      .nice()
+      .range([0, height * 0.5]);
+
     let color = (node: INode) => colors[0];
 
     if (levelsData[currentLevel].have_cluster) {
@@ -61,6 +73,7 @@ const FixedForceMap = observer(() => {
     }
 
     const fixedThreshold = (node: INode) => {
+      return true;
       return false;
       return node.type === "coarse";
     };
@@ -117,8 +130,18 @@ const FixedForceMap = observer(() => {
           .id((d) => (d as any).auto_id)
           .strength((d) => 1)
       )
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
+      .force(
+        "r",
+        d3
+          .forceRadial(
+            (d) => ((d as any).type === "coarse" ? height * 0.5 : r((d as any).dis)) as number,
+            width / 2,
+            height / 2
+          )
+          .strength(d => (d as any).type === "coarse" ? 0.1 : 5)
+      )
+      .force("charge", d3.forceManyBody());
+    // .force("center", d3.forceCenter(width / 2, height / 2));
 
     simulation.on("tick", () => {
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
@@ -132,7 +155,7 @@ const FixedForceMap = observer(() => {
         .data(links)
         .join("line")
         .attr("stroke-opacity", (link) => 0)
-        .attr("stroke-width", (link) => (link.type === 5 ? 5 : 1))
+        .attr("stroke-width", (link) => (link.type >= 4 ? 5 : 1))
         .attr("x1", (d) => (d as any).source.x)
         .attr("y1", (d) => (d as any).source.y)
         .attr("x2", (d) => (d as any).target.x)
@@ -152,7 +175,7 @@ const FixedForceMap = observer(() => {
           d3.select(`#node-${(d.target as any).auto_id}`).attr("opacity", 1);
           d3.select(`#node-${(d.source as any).auto_id}`).attr("opacity", 1);
         });
-    }, 5000);
+    }, 8000);
 
     return () => {
       simulation.stop();
