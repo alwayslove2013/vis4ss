@@ -129,18 +129,18 @@ const ForceMap = observer(() => {
     });
 
     const linkAnimation = setTimeout(() => {
-      const link = svg
-        .append("g")
-        .attr("stroke", "#999")
-        .selectAll("line")
-        .data(links)
-        .join("line")
-        .attr("stroke-opacity", (link) => 0)
-        .attr("stroke-width", (link) => (link.type === 5 ? 5 : 1))
-        .attr("x1", (d) => (d as any).source.x)
-        .attr("y1", (d) => (d as any).source.y)
-        .attr("x2", (d) => (d as any).target.x)
-        .attr("y2", (d) => (d as any).target.y);
+      // const link = svg
+      //   .append("g")
+      //   .attr("stroke", "#999")
+      //   .selectAll("line")
+      //   .data(links)
+      //   .join("line")
+      //   .attr("stroke-opacity", (link) => 0)
+      //   .attr("stroke-width", (link) => (link.type === 5 ? 5 : 1))
+      //   .attr("x1", (d) => (d as any).source.x)
+      //   .attr("y1", (d) => (d as any).source.y)
+      //   .attr("x2", (d) => (d as any).target.x)
+      //   .attr("y2", (d) => (d as any).target.y);
       link
         .transition()
         .duration(50)
