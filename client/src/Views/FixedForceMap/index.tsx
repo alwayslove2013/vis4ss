@@ -139,8 +139,8 @@ const FixedForceMap = observer(() => {
         .attr("y2", (d) => (d as any).target.y);
       link
         .transition()
-        .duration(50)
-        .delay((d, i) => i * 150)
+        .duration(80)
+        .delay((d, i) => i * 80)
         .attr("stroke-opacity", (link) =>
           link.type === 5
             ? (link.source as any).type === "target"
