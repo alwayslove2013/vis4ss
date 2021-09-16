@@ -108,6 +108,7 @@ def search_layer(target, eps, ef, level, k):
 
     while len(candidates) > 0:
         c = heappop(candidates)
+        vis_candidates.append(int(c[2]))
         f = waiting_list[0]
         if c[1] > f[1]:
             break
@@ -127,7 +128,7 @@ def search_layer(target, eps, ef, level, k):
                     if len(waiting_list) > ef:
                         heappop(waiting_list)
 
-                    vis_candidates.append(e)
+                    # vis_candidates.append(e)
                     vis_candidates_link.append([int(c[2]), int(e)])
 
     waiting_list.sort(key=lambda x: x[1])
